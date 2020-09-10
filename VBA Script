@@ -1,0 +1,130 @@
+Sub Stock_Data()
+    'Labels
+    Dim Labels() As Variant
+    Dim WS As Worksheet
+    Dim WB As Workbook
+    
+    Set WB = ActiveWorkbook
+    Labels() = Array("<Ticker> ", "<Date> ", "<Open> ", "<High> ", "<Low> ", "<Close> ", "<Vol> ", "  ", "Ticker ", "Yearly_Change ", "Percent_Change ", "Total_Stock_Volume ", "  ", "  ", "  ", "Ticker ", "Value")
+    
+    For Each WS In WB.Sheets
+    With WS
+    .Rows(1).Value = " "
+    'Idea for LBound UBound Use from "Arrays Ubound and Lbound Explained in Excel VBA - Code Inlcuded" By Everyday VBA on YouTube
+    For i = LBound(Labels()) To UBound(Labels())
+    .Cells(1, 1 + i).Value = Labels(i)
+    
+    Next i
+    .Rows(1).Font.Bold = True
+    .Rows(1).VerticalAlignment = xlCenter
+    End With
+
+Next WS
+    For Each WS In Worksheets
+        Dim Ticker_Name As String
+        Ticker_Name = " "
+        Dim Total_Ticker_Volume As Double
+        Total_Ticker_Volume = 0
+        Dim B_Price As Double
+        B_Price = 0
+        Dim E_Price As Double
+        E_Price = 0
+        Dim Yr_Price_Change As Double
+        Yr_Price_Change = 0
+        Dim Yr_PC_Percent As Double
+        Yr_PC_Percent = 0
+        Dim Maximum_Ticker_Name As String
+        Max_Ticker_Name = " "
+        Dim Min_Ticker_Name As String
+        Min_Ticker_Name = " "
+        Dim Max_Percent As Double
+        Max_Percent = 0
+        Dim Min_Percent As Double
+        Min_Percent = 0
+        Dim Max_Volume_Ticker_Name As String
+        Max_Volume_Ticker_Name = " "
+        Dim Max_Volume As Double
+        Max_Volume = 0
+        
+        Dim Summary_Table_Row As Long
+        Summary_Table_Row = 2
+        
+        Dim LastRow As Long
+        
+        LastRow = WS.Cells(Rows.Count, 1).End(xlUp).Row
+        
+        B_Price = WS.Cells(2, 3).Value
+        
+        For i = 2 To LastRow
+        
+            If WS.Cells(i + 1, 1).Value <> WS.Cells(i, 1).Value Then
+                
+                Ticker_Name = WS.Cells(i, 1).Value
+                
+                E_Price = WS.Cells(i, 6).Value
+                Yr_Price_Change = E_Price - B_Price
+                
+                If B_Price <> 0 Then
+                    Yr_PC_Percent = (Yr_Price_Change / B_Price) * 100
+                    
+                End If
+                Total_Ticker_Volume = Total_Ticker_Volume + WS.Cells(i, 7).Value
+                
+                WS.Range("I" & Summary_Table_Row).Value = Ticker_Name
+                
+                WS.Range("J" & Summary_Table_Row).Value = Yr_Price_Change
+                
+                If (Yr_Price_Change > 0) Then
+                    'VBA Conditional Formtatting From "Conditional Formatting using VBA Code - Change Cell Color basis on Condition" by Excel Destination on YouTube
+                    WS.Range("J" & Summary_Table_Row).Interior.ColorIndex = 4
+                    
+                ElseIf (Yr_Price_Change <= 0) Then
+                    
+                    WS.Range("J" & Summary_Table_Row).Interior.ColorIndex = 3
+                
+                End If
+                WS.Range("K" & Summary_Table_Row).Value = (CStr(Yr_PC_Percent) & "%")
+                
+                WS.Range("L" & Summary_Table_Row).Value = Total_Ticker_Volume
+                
+                Summary_Table_Row = Summary_Table_Row + 1
+                
+                B_Price = WS.Cells(i + 1, 3).Value
+                
+                If (Yr_PC_Percent > Max_Percent) Then
+                    Max_Percent = Yr_PC_Percent
+                    Max_Ticker_Name = Ticker_Name
+                    
+                ElseIf (Yr_PC_Percent < Min_Percent) Then
+                    Min_Percent = Yr_PC_Percent
+                    Min_Ticker_Name = Ticker_Name
+                    
+                End If
+                
+                If (Total_Ticker_Volume > Max_Volume) Then
+                    Max_Volume = Total_Ticker_Volume
+                    Max_Volume_Ticker_Name = Ticker_Name
+                End If
+                
+                Yr_PC_Percent = 0
+                Total_Ticker_Volume = 0
+                
+            Else
+                Total_Ticker_Volume = Total_Ticker_Volume + WS.Cells(i, 7).Value
+                
+            End If
+            
+        Next i
+            
+                WS.Range("Q2").Value = (CStr(Max_Percent) & "%")
+                WS.Range("Q3").Value = (CStr(Min_Percent) & "%")
+                WS.Range("P2").Value = Max_Ticker_Name
+                WS.Range("P3").Value = Min_Ticker_Name
+                WS.Range("Q4").Value = Max_Volume
+                WS.Range("O2").Value = "Greatest % Increase"
+                WS.Range("O3").Value = "Greatest % Decrease"
+                WS.Range("O4").Value = "Greatest % Total Stock Volume"
+                
+        Next WS
+                
+End Sub
